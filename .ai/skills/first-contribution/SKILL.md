@@ -1,14 +1,20 @@
 ---
 name: first-contribution
 description: >
-  Find a good first issue on huggingface/diffusers and guide a contributor
-  through planning, implementing, testing, and PR prep. Use when someone wants
-  their first PR, asks to fix a good first issue, or is ready to contribute code.
+  Demo workflow: find a good first issue on huggingface/diffusers (reference only),
+  guide a contributor through Docker setup, planning, implementing, testing, and
+  PR prep on andrewwoj/diffusers. Use when someone wants their first PR, asks to
+  fix a good first issue, or is ready to contribute code in a demo session.
 ---
 
-# First contribution
+# First contribution (demo)
 
-Guide a contributor through fixing **one good first issue** on [huggingface/diffusers](https://github.com/huggingface/diffusers/issues). Code edits happen in the local checkout; issues and PRs target the upstream repo.
+Guide a contributor through fixing **one good first issue** as a **demonstration exercise**.
+
+| Resource | Repo | Purpose |
+|----------|------|---------|
+| Issues | [huggingface/diffusers](https://github.com/huggingface/diffusers/issues) | **Reference only** — pick an issue to practice on |
+| Code + PRs | [andrewwoj/diffusers](https://github.com/andrewwoj/diffusers) | **All edits and PRs go here** |
 
 **Not familiar with the repo?** Run the [onboarding-acme](../onboarding-acme/SKILL.md) skill first.
 
@@ -18,6 +24,7 @@ Guide a contributor through fixing **one good first issue** on [huggingface/diff
 
 ## Agent rules
 
+- **Demo only** — **never** open a PR on `huggingface/diffusers`. **Never** comment on issues there. All PRs target `andrewwoj/diffusers`.
 - **Gate each phase** — wait for user confirmation before proceeding (unless user said "proceed through all steps")
 - **Never commit or open a PR** unless the user explicitly asks
 - **Convention whys** — link to [conventions-overview.md](../onboarding-acme/conventions-overview.md) anchors; do not re-teach the full codebase tour
@@ -25,31 +32,92 @@ Guide a contributor through fixing **one good first issue** on [huggingface/diff
 
 ---
 
-## Phase 1: Prerequisites
+## Phase 1: Environment setup
+
+Complete all three steps before issue discovery. Do not write code until Docker and the feature branch are ready.
+
+### 1a. Repo and auth
 
 **Do:**
 
-1. Confirm dev environment:
+1. Confirm `gh auth status` succeeds
+2. Confirm `origin` points to **andrewwoj/diffusers** (not huggingface):
    ```bash
-   pip install -e ".[dev]"
-   pip install -e ".[test]"
-   make cursor    # if using Cursor
+   git remote -v
    ```
-2. Confirm on a feature branch (not `main`):
+   If `origin` is wrong, fix it:
    ```bash
-   git checkout -b fix-issue-<number>
+   git remote set-url origin git@github.com:andrewwoj/diffusers.git
    ```
-3. Confirm `gh auth status` succeeds
+3. Confirm not on `main`:
+   ```bash
+   git branch --show-current
+   ```
+
+**Gate:** `gh` is authenticated and `origin` is `andrewwoj/diffusers`.
+
+### 1b. Docker container
+
+**Do:** build and enter a dev container before any code changes. The repo is bind-mounted so edits in Cursor apply inside the container.
+
+```bash
+docker build -t diffusers-dev docker/diffusers-pytorch-cpu
+docker run -it --rm -v "$(pwd)":/workspace -w /workspace diffusers-dev bash
+```
+
+Inside the container, install the mounted checkout:
+
+```bash
+pip install -e ".[dev,test]"
+pytest --version
+make cursor    # if using Cursor — run on host if make is unavailable in container
+```
+
+**Gate:** container is running, `pip install -e` succeeded, and `pytest --version` works.
+
+### 1c. Feature branch
+
+**Do:** create a branch **before** selecting an issue. Use this naming pattern:
+
+```
+fix-issue-<NUMBER>-<short-kebab-description>
+```
+
+Examples: `fix-issue-1234-wrong-dtype`, `fix-issue-567-missing-docstring`
+
+**Rules:**
+
+| Rule | Good | Bad |
+|------|------|-----|
+| Lowercase kebab-case | `fix-issue-42-scheduler-step` | `Fix_Issue_42` |
+| Starts with `fix-issue-` | `fix-issue-99-typo` | `my-branch`, `issue-99` |
+| Includes issue number once chosen | `fix-issue-1234-...` | `fix-scheduler` (no number) |
+| No spaces or underscores | `fix-issue-1-null-check` | `fix issue 1` |
+| Not `main` | any feature branch | `main` |
+
+If the issue is not selected yet, create a temporary branch and rename after Phase 2:
+
+```bash
+git checkout -b fix-issue-TBD
+# after issue selection:
+git branch -m fix-issue-<NUMBER>-<short-kebab-description>
+```
+
+Verify:
+
+```bash
+git branch --show-current
+```
 
 **Convention:** [branch-not-main](../onboarding-acme/conventions-overview.md#branch-not-main)
 
-**Gate:** proceed only when environment is ready, or user asks to set up as part of this session.
+**Gate:** on a correctly named feature branch (not `main`).
 
 ---
 
 ## Phase 2: Issue discovery
 
-**Do:** follow [issue-discovery.md](issue-discovery.md):
+**Do:** follow [issue-discovery.md](issue-discovery.md). Issues come from **huggingface/diffusers** for reference only — do not comment on them and do not check for existing PRs (demo exercise).
 
 ```bash
 gh issue list --repo huggingface/diffusers \
@@ -57,9 +125,7 @@ gh issue list --repo huggingface/diffusers \
   --json number,title,body,labels,assignees,url
 ```
 
-Cross-check each candidate for open PRs. Rank and present top 3–5 via `AskUserQuestion`.
-
-**Convention:** [coordinate-first](../onboarding-acme/conventions-overview.md#coordinate-first) — avoid duplicate work
+Rank and present top 3–5 via `AskUserQuestion`. After selection, rename the branch if needed (see Phase 1c).
 
 **Gate:** user selects an issue (or pastes one manually).
 
@@ -69,7 +135,7 @@ Cross-check each candidate for open PRs. Rank and present top 3–5 via `AskUser
 
 **Do:**
 
-1. Fetch full issue:
+1. Fetch full issue (read-only reference):
    ```bash
    gh issue view <NUMBER> --repo huggingface/diffusers \
      --json title,body,labels,comments,url
@@ -82,7 +148,9 @@ Cross-check each candidate for open PRs. Rank and present top 3–5 via `AskUser
 ```markdown
 ## Task Plan
 
-- **Issue:** #N — <title> (<url>)
+- **Issue (reference):** #N — <title> (<huggingface issue url>)
+- **Target repo:** andrewwoj/diffusers
+- **Branch:** fix-issue-<N>-<short-kebab-description>
 - **Hypothesis:** <root cause or approach>
 - **Files to touch:** <list>
 - **Domain guide:** <models.md / pipelines.md / modular.md / none>
@@ -119,7 +187,7 @@ Cross-check each candidate for open PRs. Rank and present top 3–5 via `AskUser
 
 ## Phase 5: Tests
 
-**Do:**
+**Do:** run tests **inside the Docker container** from Phase 1b.
 
 1. Run existing tests for the touched area:
    ```bash
@@ -136,7 +204,7 @@ Cross-check each candidate for open PRs. Rank and present top 3–5 via `AskUser
 
 ## Phase 6: Format and lint
 
-**Do:**
+**Do:** inside the Docker container (or host if tooling is only on host):
 
 ```bash
 make style
@@ -167,20 +235,26 @@ Fix all blocking findings. Note intentional skips for the PR description.
 **Do:** verify this checklist — do **not** open the PR unless the user asks:
 
 ```
-- [ ] Issue #N linked; maintainer acknowledgment requested or received
-- [ ] Branch is not main
+- [ ] Branch is not main and follows fix-issue-<N>-<description> naming
+- [ ] origin points to andrewwoj/diffusers
 - [ ] make style && make quality pass
 - [ ] pytest output saved for PR description
 - [ ] self-review skill run — blocking issues fixed
-- [ ] PR description will include: issue link, test commands + output, summary of change
+- [ ] PR description will include: reference issue link (huggingface), test commands + output, summary of change
 - [ ] No large binary files committed
+- [ ] PR will be opened on andrewwoj/diffusers — NOT huggingface/diffusers
 ```
 
-Remind the user to comment on the issue before opening the PR if they haven't:
+When the user asks to open the PR:
 
-> I'd like to work on this issue.
+```bash
+git push -u origin HEAD
+gh pr create --repo andrewwoj/diffusers \
+  --title "<summary>" \
+  --body "<description with reference to huggingface/diffusers#N>"
+```
 
-**Convention:** [coordinate-first](../onboarding-acme/conventions-overview.md#coordinate-first)
+**Never** run `gh pr create --repo huggingface/diffusers` or comment on huggingface issues.
 
 ---
 
