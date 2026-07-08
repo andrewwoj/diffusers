@@ -1,0 +1,27 @@
+# .cursorignore — approved-context boundary for the diffusers assistant
+# Principle: the agent reasons only from current, canonical, convention-
+# following code. If we wouldn't hand it to a new hire as a reference,
+# the agent doesn't see it either.
+
+# --- Convention hazards: code that teaches the wrong patterns ---
+examples/research_projects/     # frozen research code, explicitly unmaintained
+examples/community/             # community pipelines — not held to core conventions
+**/deprecated/                  # kept for backwards compat, not a pattern source
+
+# --- Noise: wastes context window, adds no signal ---
+docs/source/_build/
+*.ipynb                         # notebooks: stale API usage, huge token cost
+benchmarks/
+
+# --- Binary / generated artifacts ---
+*.safetensors
+*.bin
+*.onnx
+*.png
+*.gif
+
+# --- Customer-translation section (empty here, populated in a real engagement) ---
+# .env*
+# **/credentials/
+# **/fixtures/customer_data/
+# vendor/
