@@ -23,7 +23,6 @@ import torchvision.transforms as T
 from gmflow.gmflow import GMFlow
 from transformers import CLIPImageProcessor, CLIPTextModel, CLIPTokenizer
 
-from diffusers.image_processor import VaeImageProcessor
 from diffusers.models import AutoencoderKL, ControlNetModel, UNet2DConditionModel
 from diffusers.models.attention_processor import Attention, AttnProcessor
 from diffusers.pipelines.controlnet.multicontrolnet import MultiControlNetModel
@@ -310,39 +309,6 @@ class RerenderAVideoPipeline(StableDiffusionControlNetImg2ImgPipeline):
         device=None,
     ):
         super().__init__(
-            vae,
-            text_encoder,
-            tokenizer,
-            unet,
-            controlnet,
-            scheduler,
-            safety_checker,
-            feature_extractor,
-            image_encoder,
-            requires_safety_checker,
-        )
-        self.to(device)
-
-        if safety_checker is None and requires_safety_checker:
-            logger.warning(
-                f"You have disabled the safety checker for {self.__class__} by passing `safety_checker=None`. Ensure"
-                " that you abide to the conditions of the Stable Diffusion license and do not expose unfiltered"
-                " results in services or applications open to the public. Both the diffusers team and Hugging Face"
-                " strongly recommend to keep the safety filter enabled in all public facing circumstances, disabling"
-                " it only for use-cases that involve analyzing network behavior or auditing its results. For more"
-                " information, please have a look at https://github.com/huggingface/diffusers/pull/254 ."
-            )
-
-        if safety_checker is not None and feature_extractor is None:
-            raise ValueError(
-                "Make sure to define a feature extractor when loading {self.__class__} if you want to use the safety"
-                " checker. If you do not want to use the safety checker, you can pass `'safety_checker=None'` instead."
-            )
-
-        if isinstance(controlnet, (list, tuple)):
-            controlnet = MultiControlNetModel(controlnet)
-
-        self.register_modules(
             vae=vae,
             text_encoder=text_encoder,
             tokenizer=tokenizer,
@@ -351,13 +317,11 @@ class RerenderAVideoPipeline(StableDiffusionControlNetImg2ImgPipeline):
             scheduler=scheduler,
             safety_checker=safety_checker,
             feature_extractor=feature_extractor,
+            image_encoder=image_encoder,
+            requires_safety_checker=requires_safety_checker,
         )
-        self.vae_scale_factor = 2 ** (len(self.vae.config.block_out_channels) - 1) if getattr(self, "vae", None) else 8
-        self.image_processor = VaeImageProcessor(vae_scale_factor=self.vae_scale_factor, do_convert_rgb=True)
-        self.control_image_processor = VaeImageProcessor(
-            vae_scale_factor=self.vae_scale_factor, do_convert_rgb=True, do_normalize=False
-        )
-        self.register_to_config(requires_safety_checker=requires_safety_checker)
+        self.to(device)
+
         self.attn_state = AttnState()
         attn_processor_dict = {}
         for k in unet.attn_processors.keys():
