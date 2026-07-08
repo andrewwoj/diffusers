@@ -27,14 +27,54 @@ Guide a contributor through fixing **one good first issue** as a **demonstration
 - **Demo only** — **never** open a PR on `huggingface/diffusers`. **Never** comment on issues there. All PRs target `andrewwoj/diffusers`.
 - **Gate each phase** — wait for user confirmation before proceeding (unless user said "proceed through all steps")
 - **Never commit or open a PR** unless the user explicitly asks
-- **Convention whys** — link to [conventions-overview.md](../onboarding-acme/conventions-overview.md) anchors; do not re-teach the full codebase tour
+- **Teach conventions in context** — this is a first contribution to a large codebase. At each phase (and before each edit category in Phase 4), explain conventions using **where → why → link**:
+  - **Where** — the file, phase step, or decision point where the convention applies
+  - **Why** — one sentence on what goes wrong if ignored (review rejection, silent bugs, CI failure)
+  - **Link** — anchor in [conventions-overview.md](../onboarding-acme/conventions-overview.md) or the domain guide ([models.md](../../models.md), [pipelines.md](../../pipelines.md), [modular.md](../../modular.md))
+- Do not dump the full conventions doc — point to the 1–3 conventions relevant to the current step. Deeper questions → [onboarding-acme](../onboarding-acme/SKILL.md).
 - **Handoffs:** convention questions → [onboarding-acme](../onboarding-acme/SKILL.md); pre-PR review → [self-review](../self-review/SKILL.md)
+
+---
+
+## Conventions by phase (quick map)
+
+Use this map to decide what to explain at each step. Full definitions: [conventions-overview.md](../onboarding-acme/conventions-overview.md).
+
+| Phase | Convention | Where it applies | Why it matters on a first PR |
+|-------|------------|------------------|------------------------------|
+| 1c | [branch-not-main](../onboarding-acme/conventions-overview.md#branch-not-main) | `git checkout -b fix-issue-…` | PRs must come from a feature branch — commits on `main` are not mergeable |
+| 1b | [scoped-tests](../onboarding-acme/conventions-overview.md#scoped-tests) (setup) | Docker + `pip install -e ".[dev,test]"` | Tests you run in Phase 5 must match CI's Python/deps — host envs vary |
+| 1 | [ai-convention-layer](../onboarding-acme/conventions-overview.md#ai-convention-layer) | `make cursor` on host | Wires `.ai/skills/` so agents (and you) can self-serve rules without asking maintainers |
+| 2 | [one-problem-per-pr](../onboarding-acme/conventions-overview.md#one-problem-per-pr) | Issue ranking / selection | Good first issues are single-file or single-component — broad features stall in review |
+| 2 | [coordinate-first](../onboarding-acme/conventions-overview.md#coordinate-first) | Issue choice (reference only in demo) | On the real repo, maintainers confirm scope before you invest days of work |
+| 3 | Domain guides | Task Plan → **Domain guide** row | Models, pipelines, and modular code each have different file layout and gotchas |
+| 3 | [philosophy](../onboarding-acme/conventions-overview.md#philosophy) | Hypothesis / approach | Smallest readable fix beats a clever refactor — reviewers expect minimal diffs |
+| 4 | [one-problem-per-pr](../onboarding-acme/conventions-overview.md#one-problem-per-pr) | Every edit | Drive-by fixes in unrelated files get rejected even if correct |
+| 4 | [no-defensive-code](../onboarding-acme/conventions-overview.md#no-defensive-code) | Error handling / fallbacks | Silent workarounds hide bugs; explicit errors match project style |
+| 4 | [inline-helpers](../onboarding-acme/conventions-overview.md#inline-helpers) | Temptation to extract helpers | Reviewers read the diff top-to-bottom — jumping between one-off helpers slows review |
+| 4 | [copied-from](../onboarding-acme/conventions-overview.md#copied-from) | Copying `__init__` / `encode_prompt` from a sibling | Near-duplicate code must stay linked or it drifts silently |
+| 4 | [pipeline-no-grad](../onboarding-acme/conventions-overview.md#pipeline-no-grad) | Pipeline `__call__` | Missing `@torch.no_grad()` causes GPU OOM during inference |
+| 4 | [lazy-imports](../onboarding-acme/conventions-overview.md#lazy-imports) | New public class in `src/diffusers/` | Unregistered classes fail at import time for users, not in your local test |
+| 5 | [scoped-tests](../onboarding-acme/conventions-overview.md#scoped-tests) | `pytest tests/<area>/…` | Full suite is slow; area tests give fast feedback and are what you cite in the PR |
+| 6 | [make-style](../onboarding-acme/conventions-overview.md#make-style) | `make style` / `make quality` | CI runs the same checks — failing lint blocks merge regardless of correctness |
+| 6 | [copied-from](../onboarding-acme/conventions-overview.md#copied-from) | After editing a `# Copied from` block | Run `make fix-copies` or CI will report out-of-sync duplicates |
+| 7 | [self-review](../onboarding-acme/conventions-overview.md#self-review) | Pre-PR diff review | Same rubric as `@claude` CI — catches dead code and convention violations early |
+| 8 | [one-problem-per-pr](../onboarding-acme/conventions-overview.md#one-problem-per-pr) | PR title and description | Title should describe one change; body links the reference issue and test proof |
+
+**Domain guide routing (Phase 3):**
+
+| If the issue touches… | Read first | Common gotcha |
+|-----------------------|------------|---------------|
+| `src/diffusers/models/` | [models.md](../../models.md) | Attention blocks, config mixins, lazy import registration |
+| `src/diffusers/pipelines/` or `examples/community/` | [pipelines.md](../../pipelines.md) | `register_modules`, `@torch.no_grad()`, `# Copied from` |
+| `src/diffusers/modular_pipelines/` | [modular.md](../../modular.md) | Block composition — not monolithic `__call__` |
+| Schedulers, loaders, utils only | [conventions-overview.md](../onboarding-acme/conventions-overview.md) | General style rules; grep nearest sibling file |
 
 ---
 
 ## Phase 1: Environment setup
 
-Complete all three steps before issue discovery. Do not write code until Docker and the feature branch are ready.
+Complete all three steps before **Phase 3**. Phase 2 (issue discovery) can run in parallel with Phase 1b/1c, but do not analyze, plan, or write code until the Phase 2 exit gate passes (see below).
 
 ### 1a. Repo and auth
 
@@ -56,6 +96,10 @@ Complete all three steps before issue discovery. Do not write code until Docker 
 
 **Gate:** `gh` is authenticated and `origin` is `andrewwoj/diffusers`.
 
+**Conventions here:**
+
+- **[branch-not-main](../onboarding-acme/conventions-overview.md#branch-not-main)** — *where:* before your first commit. *why:* all changes reach maintainers through PRs from a named branch; working on `main` mixes local experiments with the shared baseline.
+
 ### 1b. Docker container
 
 **Do:** build and enter a dev container before any code changes. The repo is bind-mounted so edits in Cursor apply inside the container.
@@ -73,7 +117,21 @@ pytest --version
 make cursor    # if using Cursor — run on host if make is unavailable in container
 ```
 
-**Gate:** container is running, `pip install -e` succeeded, and `pytest --version` works.
+**Verify** (agent can run non-interactively; user runs `docker run -it ... bash` when they need a shell):
+
+```bash
+docker info   # daemon reachable — start Colima/Docker Desktop if this fails
+docker images diffusers-dev --format '{{.Repository}}'   # image exists
+docker run --rm -v "$(pwd)":/workspace -w /workspace diffusers-dev \
+  bash -c 'pip install -e ".[dev,test]" && pytest --version'
+```
+
+**Gate:** Docker daemon is running, `diffusers-dev` image is built, `pip install -e` succeeded, and `pytest --version` works inside the container.
+
+**Conventions here:**
+
+- **[scoped-tests](../onboarding-acme/conventions-overview.md#scoped-tests)** — *where:* inside this container in Phases 5–6. *why:* diffusers has heavy deps (PyTorch, transformers); Docker matches CI so "passes locally, fails in CI" is less likely.
+- **[ai-convention-layer](../onboarding-acme/conventions-overview.md#ai-convention-layer)** — *where:* `make cursor` on the **host**. *why:* links `.ai/skills/` into Cursor so convention docs stay one command away during the rest of the workflow.
 
 ### 1c. Feature branch
 
@@ -109,7 +167,7 @@ Verify:
 git branch --show-current
 ```
 
-**Convention:** [branch-not-main](../onboarding-acme/conventions-overview.md#branch-not-main)
+**Convention:** [branch-not-main](../onboarding-acme/conventions-overview.md#branch-not-main) — *where:* branch name `fix-issue-<N>-<description>`. *why:* reviewers and CI tie a PR to one issue; predictable names make your demo PR easy to follow.
 
 **Gate:** on a correctly named feature branch (not `main`).
 
@@ -127,11 +185,46 @@ gh issue list --repo huggingface/diffusers \
 
 Rank and present top 3–5 via `AskUserQuestion`. After selection, rename the branch if needed (see Phase 1c).
 
+**Conventions here:**
+
+- **[one-problem-per-pr](../onboarding-acme/conventions-overview.md#one-problem-per-pr)** — *where:* issue ranking. *why:* prefer issues with a clear repro, single file, or `bug` label — a first PR should fit in one review session, not sprawl across the tree.
+- **[coordinate-first](../onboarding-acme/conventions-overview.md#coordinate-first)** — *where:* real contributions on huggingface/diffusers (demo skips this). *why:* maintainers may already be working on the issue or want a different approach — worth knowing before you treat an issue as "yours."
+
 **Gate:** user selects an issue (or pastes one manually).
+
+### Phase 2 exit gate — environment ready (required before Phase 3)
+
+Do **not** start Phase 3 until **all** Phase 1 checks pass. Re-run verification even if Phase 1 was discussed earlier:
+
+```bash
+# 1a — auth and remote
+gh auth status
+git remote -v   # origin → andrewwoj/diffusers
+
+# 1b — Docker daemon, image, and editable install
+docker info
+docker run --rm -v "$(pwd)":/workspace -w /workspace diffusers-dev \
+  bash -c 'pip install -e ".[dev,test]" && pytest --version'
+
+# 1c — feature branch (rename after issue selection if still fix-issue-TBD)
+git branch --show-current   # not main; ideally fix-issue-<N>-<short-kebab-description>
+```
+
+If any check fails, stop and complete the missing Phase 1 step. Common fixes:
+
+| Failure | Fix |
+|---------|-----|
+| `Cannot connect to the Docker daemon` | `colima start` or start Docker Desktop / OrbStack |
+| `diffusers-dev` image missing | `docker build -t diffusers-dev docker/diffusers-pytorch-cpu` |
+| Branch still `fix-issue-TBD` | `git branch -m fix-issue-<NUMBER>-<short-kebab-description>` |
+
+**Gate:** Phase 1a, 1b, and 1c all pass → proceed to Phase 3.
 
 ---
 
 ## Phase 3: Analyze and plan
+
+**Prerequisite:** Phase 2 exit gate (Phase 1 complete) must pass. If Docker or the feature branch is not ready, finish Phase 1 before producing the Task Plan.
 
 **Do:**
 
@@ -142,8 +235,8 @@ Rank and present top 3–5 via `AskUserQuestion`. After selection, rename the br
    ```
 2. Grep the local repo for affected files
 3. Skim the nearest reference implementation in the same area
-4. Identify domain guide if code touches models/pipelines/modular code
-5. Output a **Task Plan**:
+4. Identify domain guide if code touches models/pipelines/modular code (see [Domain guide routing](#conventions-by-phase-quick-map) above)
+5. Output a **Task Plan** — include a **Conventions that apply** section with *where* and *why* for each (not just anchor links):
 
 ```markdown
 ## Task Plan
@@ -153,11 +246,19 @@ Rank and present top 3–5 via `AskUserQuestion`. After selection, rename the br
 - **Branch:** fix-issue-<N>-<short-kebab-description>
 - **Hypothesis:** <root cause or approach>
 - **Files to touch:** <list>
-- **Domain guide:** <models.md / pipelines.md / modular.md / none>
+- **Domain guide:** <models.md / pipelines.md / modular.md / none> — <one line: why this guide for these files>
+- **Reference implementation:** <nearest sibling file to skim before editing>
 - **Tests to run:** pytest tests/<area>/test_<relevant>.py
 - **Tests to add/update:** <yes/no + what>
-- **Conventions that apply:** <links to conventions-overview anchors>
+- **Conventions that apply:**
+  - [<name>](../onboarding-acme/conventions-overview.md#<anchor>) — **where:** <file or step>; **why:** <one sentence for this issue>
+  - …
 ```
+
+**Conventions here:**
+
+- **[philosophy](../onboarding-acme/conventions-overview.md#philosophy)** — *where:* hypothesis and file list. *why:* the fix should be the smallest change a reader can follow — not a refactor "while we're here."
+- **Domain guides** — *where:* before grep/edit. *why:* pipelines, models, and modular blocks look similar but have different inheritance, registration, and test layout; copying the wrong sibling causes review churn.
 
 **Gate:** wait for explicit user approval of the Task Plan before writing code.
 
@@ -167,21 +268,21 @@ Rank and present top 3–5 via `AskUserQuestion`. After selection, rename the br
 
 **Do:**
 
-- Make the **smallest fix** that solves the issue — no unrelated refactors
-- Before editing: skim reference file in the same area (e.g. sibling pipeline or model)
-- At each edit category, state the convention and link its anchor:
+- Make the **smallest fix** that solves the issue — no unrelated refactors ([one-problem-per-pr](../onboarding-acme/conventions-overview.md#one-problem-per-pr))
+- Before editing: skim the **reference implementation** named in the Task Plan (e.g. sibling pipeline in the same folder)
+- **Before each edit**, tell the user which convention applies using *where → why → link* (see table below)
 
-| If you… | Convention |
-|---------|-------------|
-| Reuse a method from another file | [#copied-from](../onboarding-acme/conventions-overview.md#copied-from) |
-| Touch pipeline `__call__` | [#pipeline-no-grad](../onboarding-acme/conventions-overview.md#pipeline-no-grad) |
-| Add a new public class | [#lazy-imports](../onboarding-acme/conventions-overview.md#lazy-imports) |
-| Consider a fallback path | [#no-defensive-code](../onboarding-acme/conventions-overview.md#no-defensive-code) |
-| Factor out a one-off helper | [#inline-helpers](../onboarding-acme/conventions-overview.md#inline-helpers) |
+| If you… | Convention | Where | Why |
+|---------|------------|-------|-----|
+| Copy `__init__`, `encode_prompt`, or similar from another file | [#copied-from](../onboarding-acme/conventions-overview.md#copied-from) | Top of copied block | Without the header, your copy drifts when the source changes — Phase 6 needs `make fix-copies` |
+| Touch pipeline `__call__` | [#pipeline-no-grad](../onboarding-acme/conventions-overview.md#pipeline-no-grad) | `@torch.no_grad()` on `__call__` | Inference must not build autograd graphs — missing decorator → OOM |
+| Add a new public class under `src/diffusers/` | [#lazy-imports](../onboarding-acme/conventions-overview.md#lazy-imports) | Subpackage + top-level `__init__.py` | Users import from `diffusers` — unregistered classes raise `ImportError` in the wild |
+| Consider a fallback or "just in case" branch | [#no-defensive-code](../onboarding-acme/conventions-overview.md#no-defensive-code) | `if/else` around bad inputs | Reviewers prefer a clear error in the docstring over silent correction |
+| Factor out a helper used once | [#inline-helpers](../onboarding-acme/conventions-overview.md#inline-helpers) | New `_foo()` or module function | One-off helpers force reviewers to jump around the diff |
+| Edit `examples/community/` pipeline `__init__` | [pipelines.md](../../pipelines.md) — `register_modules` | `super().__init__()` + keyword `register_modules(...)` | Positional `super().__init__(vae, …, requires_safety_checker)` breaks when the parent signature adds parameters |
+| Change only community examples, not `src/` | [#one-problem-per-pr](../onboarding-acme/conventions-overview.md#one-problem-per-pr) | Scope of diff | Stay within files listed in the Task Plan |
 
-**Convention:** [one-problem-per-pr](../onboarding-acme/conventions-overview.md#one-problem-per-pr)
-
-**Gate:** show the diff summary and ask user to review before running tests.
+**Gate:** show the diff summary, cite which conventions guided the edits, and ask user to review before running tests.
 
 ---
 
@@ -196,7 +297,7 @@ Rank and present top 3–5 via `AskUserQuestion`. After selection, rename the br
 2. Add or update tests if the issue is a bug fix or adds behavior
 3. Reference nearest test file for patterns (e.g. `tests/schedulers/test_scheduler_tcd.py`)
 
-**Convention:** [scoped-tests](../onboarding-acme/conventions-overview.md#scoped-tests)
+**Convention:** [scoped-tests](../onboarding-acme/conventions-overview.md#scoped-tests) — *where:* `pytest tests/<area>/test_<relevant>.py`. *why:* the full suite can take hours; area tests prove your change without blocking on unrelated failures. Save the command + output for the PR body (Phase 8).
 
 **Gate:** all relevant tests pass — paste output for the PR description later.
 
@@ -212,7 +313,10 @@ make quality
 make fix-copies   # only if a # Copied from source was edited
 ```
 
-**Convention:** [make-style](../onboarding-acme/conventions-overview.md#make-style)
+**Conventions here:**
+
+- **[make-style](../onboarding-acme/conventions-overview.md#make-style)** — *where:* before every PR. *why:* `@claude` and CI run `make quality` — style nits block merge even when logic is correct.
+- **[copied-from](../onboarding-acme/conventions-overview.md#copied-from)** — *where:* only if you edited a `# Copied from` block. *why:* `make fix-copies` propagates your change to linked copies; skipping it leaves the repo inconsistent.
 
 **Gate:** `make quality` exits clean.
 
@@ -224,7 +328,7 @@ make fix-copies   # only if a # Copied from source was edited
 
 Fix all blocking findings. Note intentional skips for the PR description.
 
-**Convention:** [self-review](../onboarding-acme/conventions-overview.md#self-review)
+**Convention:** [self-review](../onboarding-acme/conventions-overview.md#self-review) — *where:* `git diff main...HEAD`. *why:* catches dead code paths and convention violations the author is blind to after hours in the diff — same checklist CI uses.
 
 **Gate:** verdict is **READY** (or blocking items explicitly deferred with user approval).
 
@@ -235,15 +339,21 @@ Fix all blocking findings. Note intentional skips for the PR description.
 **Do:** verify this checklist — do **not** open the PR unless the user asks:
 
 ```
-- [ ] Branch is not main and follows fix-issue-<N>-<description> naming
+- [ ] Branch is not main and follows fix-issue-<N>-<description> naming  → branch-not-main
 - [ ] origin points to andrewwoj/diffusers
-- [ ] make style && make quality pass
-- [ ] pytest output saved for PR description
-- [ ] self-review skill run — blocking issues fixed
-- [ ] PR description will include: reference issue link (huggingface), test commands + output, summary of change
+- [ ] make style && make quality pass  → make-style
+- [ ] pytest output saved for PR description  → scoped-tests
+- [ ] self-review skill run — blocking issues fixed  → self-review
+- [ ] PR description: reference issue link (huggingface), test commands + output, summary of change, conventions considered
 - [ ] No large binary files committed
 - [ ] PR will be opened on andrewwoj/diffusers — NOT huggingface/diffusers
+- [ ] Single problem in title/body  → one-problem-per-pr
 ```
+
+**Conventions here:**
+
+- **[one-problem-per-pr](../onboarding-acme/conventions-overview.md#one-problem-per-pr)** — *where:* PR title and Summary section. *why:* reviewers decide merge in one pass; mixed concerns get "please split this PR" feedback.
+- **[coordinate-first](../onboarding-acme/conventions-overview.md#coordinate-first)** — *where:* PR body links `huggingface/diffusers#N` as reference. *why:* shows you understand the upstream issue without claiming merge to the main repo in this demo.
 
 When the user asks to open the PR:
 
@@ -263,7 +373,9 @@ gh pr create --repo andrewwoj/diffusers \
 | Need | Go to |
 |------|-------|
 | Codebase tour | [onboarding-acme](../onboarding-acme/SKILL.md) |
-| Why a convention exists | [conventions-overview.md](../onboarding-acme/conventions-overview.md) |
+| Why a convention exists (full list) | [conventions-overview.md](../onboarding-acme/conventions-overview.md) |
+| Which convention at which phase | [Conventions by phase](#conventions-by-phase-quick-map) (this skill) |
+| Pipeline / model / modular rules | [pipelines.md](../../pipelines.md), [models.md](../../models.md), [modular.md](../../modular.md) |
 | Self-serve lookup | [self-serve.md](../onboarding-acme/self-serve.md) |
 | Issue search commands | [issue-discovery.md](issue-discovery.md) |
 | Pre-PR review | [self-review](../self-review/SKILL.md) |
