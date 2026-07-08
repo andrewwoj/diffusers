@@ -3,8 +3,10 @@ name: first-contribution
 description: >
   Demo workflow: find a good first issue on huggingface/diffusers (reference only),
   guide a contributor through Docker setup, planning, implementing, testing, and
-  PR prep on andrewwoj/diffusers. Use when someone wants their first PR, asks to
-  fix a good first issue, or is ready to contribute code in a demo session.
+  PR prep on andrewwoj/diffusers. Starts with a welcome and phase roadmap; supports
+  Developer, QA, PM, and DevOps participants with role-specific attention callouts.
+  Use when someone wants their first PR, asks to fix a good first issue, or is
+  ready to contribute code in a demo session.
 ---
 
 # First contribution (demo)
@@ -24,8 +26,11 @@ Guide a contributor through fixing **one good first issue** as a **demonstration
 
 ## Agent rules
 
+- **Start with Phase 0** — deliver the welcome and phase roadmap (and ask the user's role) before touching the environment or listing issues.
 - **Demo only** — **never** open a PR on `huggingface/diffusers`. **Never** comment on issues there. All PRs target `andrewwoj/diffusers`.
 - **Gate each phase** — wait for user confirmation before proceeding (unless user said "proceed through all steps")
+- **Explain what and why at every phase** — open each phase by saying what is about to happen and why the project does it this way, not just the commands. Phase intros below provide the material.
+- **Voice the role spotlight** — at each phase, surface the callout for the user's role (from Phase 0) using the [Role spotlights](#role-spotlights) table. Other roles' callouts stay in the table for reference.
 - **Never commit or open a PR** unless the user explicitly asks
 - **Teach conventions in context** — this is a first contribution to a large codebase. At each phase (and before each edit category in Phase 4), explain conventions using **where → why → link**:
   - **Where** — the file, phase step, or decision point where the convention applies
@@ -72,11 +77,61 @@ Use this map to decide what to explain at each step. Full definitions: [conventi
 
 ---
 
+## Role spotlights
+
+The workflow is written for contributors, but QA engineers, product managers, and DevOps engineers get real value from walking through it — each phase demonstrates something their role owns in a normal project. Voice the relevant callout when entering each phase.
+
+| Phase | QA engineer | Product manager | DevOps engineer |
+|-------|-------------|-----------------|-----------------|
+| 1 — Environment | Docker container is where all tests run — same env as CI, so results are reproducible | Setup cost is a one-time investment; everything after runs against a known-good baseline | **Core section:** why the CI image doubles as the dev environment, bind-mounts, editable installs, image variants in `docker/` |
+| 2 — Issue discovery | What makes an issue *testable*: clear repro steps, expected vs actual behavior, single component | **Core section:** how issues are ranked and scoped — one-problem-per-pr is a scoping tool, not just a review rule | Issues touching CI, packaging, or Docker land in `.github/workflows/`, `setup.py`, `docker/` |
+| 3 — Analyze and plan | The Task Plan's "Tests to run / Tests to add" rows are the QA contract for the change | **Core section:** the Task Plan is a lightweight spec — hypothesis, scope, and acceptance criteria in one block | The Domain guide row shows how the repo routes work by area instead of tribal knowledge |
+| 4 — Implement | Watch for edits that change behavior without a test to catch regressions | Smallest-fix discipline keeps the change shippable and reviewable in one pass | Edits happen on the host; the bind-mount makes them live inside the container instantly |
+| 5 — Tests | **Core section:** scoped tests vs full suite, `@slow`/`RUN_SLOW` gating, saved output as PR evidence | Passing scoped tests are the "definition of done" evidence attached to the PR | Test commands here are the same ones CI runs — the container guarantees parity |
+| 6 — Format and lint | Lint failures block merge regardless of test results — this is a quality gate, not cosmetics | Automated style means review time goes to correctness, not formatting debates | **Core section:** `make quality` is the exact CI check run locally — a failed CI round-trip becomes a 30-second local fix |
+| 7 — Self-review | Same rubric as the `@claude` CI reviewer — an automated pre-merge quality pass | Shows how the project front-loads review so maintainer time is spent once | The review rubric is versioned in-repo (`.ai/review-rules.md`) — CI and local runs can't drift |
+| 8 — PR prep | Test evidence (commands + output) is a required part of the PR body | **Core section:** anatomy of a reviewable PR — one problem, linked issue, test proof | The checklist mirrors what CI will verify on the PR: lint, tests, branch hygiene |
+
+---
+
+## Phase 0: Welcome and orientation
+
+Before any commands or issue lists, deliver a welcome message covering the points below, then ask the user's role.
+
+**1. What this is.** A guided demo of a complete first contribution to diffusers — from empty environment to PR-ready branch. Issues are picked from the real **huggingface/diffusers** tracker for realism, but all code and PRs go to the **andrewwoj/diffusers** demo fork, so nothing here touches the upstream project (see the repo table at the top of this skill).
+
+**2. The roadmap.** Present all eight phases with one line each of *what* happens and *why* it exists:
+
+| Phase | What happens | Why it exists |
+|-------|--------------|---------------|
+| 1 — Environment setup | Verify auth/remote, build a Docker dev container, create a feature branch | Tests must match CI's environment, and PRs must come from a named branch — fixing this later is painful |
+| 2 — Issue discovery | List good-first-issues from huggingface/diffusers, rank them, user picks one | A first PR should be one well-scoped problem; picking well is half the work |
+| 3 — Analyze and plan | Investigate the issue in the local code and write a Task Plan | A shared plan catches wrong hypotheses before code is written, when changes are cheap |
+| 4 — Implement | Make the smallest fix, teaching conventions before each edit | Minimal diffs get reviewed and merged; sprawling ones stall |
+| 5 — Tests | Run scoped tests in the container, add tests if behavior changed | Tests are the proof a reviewer needs that the fix works and stays fixed |
+| 6 — Format and lint | `make style` / `make quality` (and `make fix-copies` if needed) | CI runs the same checks — passing them locally avoids a failed CI round-trip |
+| 7 — Self-review | Review the diff against the project's review rules | Catches convention violations and dead code before a maintainer spends time on them |
+| 8 — PR prep | Verify the pre-PR checklist; open the PR only if asked | A complete, single-problem PR with test evidence is what gets merged |
+
+**3. How teaching works.** Explain that at each phase the workflow calls out the 1–3 project conventions that apply — where they apply, why they exist, and a link to read more. Deeper convention or codebase questions can branch to the [onboarding-acme](../onboarding-acme/SKILL.md) skill at any time.
+
+**4. Ask the user's role** via `AskUserQuestion` (skip if already stated): Developer (contributor), QA engineer, Product manager, or DevOps engineer. All roles walk the same phases — the role determines which [Role spotlights](#role-spotlights) get emphasized. Non-developer roles are welcome: the flow doubles as a tour of how code, tests, CI, and review connect in this project.
+
+**Gate:** welcome delivered and role known → proceed to Phase 1.
+
+---
+
 ## Phase 1: Environment setup
+
+**Why this phase exists:** everything later depends on a trustworthy environment. Tests (Phase 5) only mean something if they run against the same Python and dependency versions as CI; the PR (Phase 8) is only safe if `origin` points at the demo fork and the work sits on a feature branch. Doing these checks first turns end-of-workflow surprises into two-minute fixes now.
+
+**Role spotlight:** core phase for **DevOps** — the CI image doubling as the dev environment, bind-mounts, editable installs, and the image variants in `docker/` are all here. See [Role spotlights](#role-spotlights).
 
 Complete all three steps before **Phase 3**. Phase 2 (issue discovery) can run in parallel with Phase 1b/1c, but do not analyze, plan, or write code until the Phase 2 exit gate passes (see below).
 
 ### 1a. Repo and auth
+
+**What and why:** confirm GitHub auth works and `origin` points at the demo fork before anything else. The remote check is a safety guarantee — with `origin` on `andrewwoj/diffusers`, an accidental `git push` or `gh pr create` cannot touch the upstream project. Auth is checked now, rather than discovered broken in Phase 8, because a failed push after hours of work is the most frustrating place to hit it.
 
 **Do:**
 
@@ -102,7 +157,9 @@ Complete all three steps before **Phase 3**. Phase 2 (issue discovery) can run i
 
 ### 1b. Docker container
 
-**Do:** build and enter a dev container before any code changes. The repo is bind-mounted so edits in Cursor apply inside the container.
+**What and why:** build a dev container from the same image family CI uses (`docker/diffusers-pytorch-cpu`) instead of installing into a host venv. Diffusers has heavy, version-sensitive dependencies (PyTorch, transformers) — host environments drift, but the container pins the same Python and deps as CI, so "passes locally, fails in CI" mostly disappears. The repo is bind-mounted into the container, so edits made in Cursor on the host apply inside it instantly. The install is *editable* (`pip install -e`), meaning Python imports the mounted source directly — code changes take effect without reinstalling.
+
+**Do:** build and enter the dev container before any code changes.
 
 ```bash
 docker build -t diffusers-dev docker/diffusers-pytorch-cpu
@@ -134,6 +191,8 @@ docker run --rm -v "$(pwd)":/workspace -w /workspace diffusers-dev \
 - **[ai-convention-layer](../onboarding-acme/conventions-overview.md#ai-convention-layer)** — *where:* `make cursor` on the **host**. *why:* links `.ai/skills/` into Cursor so convention docs stay one command away during the rest of the workflow.
 
 ### 1c. Feature branch
+
+**What and why:** create a feature branch before picking an issue, so `main` stays a clean mirror of upstream from the very first edit. PRs are diffed against `main` — commits made on `main` itself are not mergeable and are painful to untangle later. The naming pattern ties the branch (and eventually the PR) to one specific issue, which is how reviewers and CI trace what a change is for.
 
 **Do:** create a branch **before** selecting an issue. Use this naming pattern:
 
@@ -174,6 +233,10 @@ git branch --show-current
 ---
 
 ## Phase 2: Issue discovery
+
+**Why this phase exists:** a first PR lives or dies on issue selection. The goal is one well-scoped, reproducible problem that fits in a single review session — ranking issues against that bar *is* the work here, not just browsing the tracker.
+
+**Role spotlight:** core phase for **PM** (issue ranking and scoping is product triage) and highly relevant for **QA** (a good issue has clear repro steps and expected-vs-actual behavior). See [Role spotlights](#role-spotlights).
 
 **Do:** follow [issue-discovery.md](issue-discovery.md). Issues come from **huggingface/diffusers** for reference only — do not comment on them and do not check for existing PRs (demo exercise).
 
@@ -224,6 +287,10 @@ If any check fails, stop and complete the missing Phase 1 step. Common fixes:
 
 ## Phase 3: Analyze and plan
 
+**Why this phase exists:** writing the Task Plan before touching code catches wrong hypotheses when they cost nothing to fix. The plan names the files, the reference implementation to imitate, the tests that define "done", and the conventions in play — so implementation becomes execution rather than exploration.
+
+**Role spotlight:** core phase for **PM** (the Task Plan is a lightweight spec: hypothesis, scope, acceptance criteria) and for **QA** (the "Tests to run / Tests to add" rows are the QA contract for the change). See [Role spotlights](#role-spotlights).
+
 **Prerequisite:** Phase 2 exit gate (Phase 1 complete) must pass. If Docker or the feature branch is not ready, finish Phase 1 before producing the Task Plan.
 
 **Do:**
@@ -266,6 +333,10 @@ If any check fails, stop and complete the missing Phase 1 step. Common fixes:
 
 ## Phase 4: Implement
 
+**Why this phase exists:** the code change itself — kept deliberately small. Reviewers merge minimal diffs they can follow top-to-bottom; every convention taught here (no drive-by fixes, no defensive fallbacks, no one-off helpers) exists to keep the diff readable in one pass.
+
+**Role spotlight:** **DevOps** — edits happen on the host, and the bind-mount from Phase 1b makes them live inside the container instantly. **QA** — watch for behavior changes that lack a test to catch regressions. See [Role spotlights](#role-spotlights).
+
 **Do:**
 
 - Make the **smallest fix** that solves the issue — no unrelated refactors ([one-problem-per-pr](../onboarding-acme/conventions-overview.md#one-problem-per-pr))
@@ -288,6 +359,10 @@ If any check fails, stop and complete the missing Phase 1 step. Common fixes:
 
 ## Phase 5: Tests
 
+**Why this phase exists:** tests are the proof a reviewer needs that the fix works and stays fixed. They run inside the Phase 1b container so the results match what CI will see, and the saved output becomes evidence in the PR body.
+
+**Role spotlight:** core phase for **QA** — scoped tests vs the full suite, `@slow`/`RUN_SLOW=1` gating for tests that download large models, and test output as PR evidence. See [Role spotlights](#role-spotlights).
+
 **Do:** run tests **inside the Docker container** from Phase 1b.
 
 1. Run existing tests for the touched area:
@@ -304,6 +379,10 @@ If any check fails, stop and complete the missing Phase 1 step. Common fixes:
 ---
 
 ## Phase 6: Format and lint
+
+**Why this phase exists:** CI runs the exact same `make quality` check on every PR — running it locally turns a failed CI round-trip (push, wait, read logs, fix, push again) into a 30-second local fix. Style is automated precisely so human review time goes to correctness.
+
+**Role spotlight:** core phase for **DevOps** — this is local/CI parity in action: the Makefile targets are the CI check, versioned in the repo. See [Role spotlights](#role-spotlights).
 
 **Do:** inside the Docker container (or host if tooling is only on host):
 
@@ -324,6 +403,10 @@ make fix-copies   # only if a # Copied from source was edited
 
 ## Phase 7: Self-review
 
+**Why this phase exists:** after hours in a diff, the author is blind to its problems. This pass applies the same rubric the `@claude` CI reviewer uses, so convention violations and dead code get fixed before a maintainer spends time finding them.
+
+**Role spotlight:** **QA** — an automated pre-merge quality gate. **DevOps** — the rubric lives in-repo (`.ai/review-rules.md`), so local and CI review can't drift. See [Role spotlights](#role-spotlights).
+
 **Do:** run the [self-review](../self-review/SKILL.md) skill against `git diff main...HEAD`.
 
 Fix all blocking findings. Note intentional skips for the PR description.
@@ -335,6 +418,10 @@ Fix all blocking findings. Note intentional skips for the PR description.
 ---
 
 ## Phase 8: PR prep
+
+**Why this phase exists:** a PR is an argument that the change is safe to merge — one problem, a linked issue, and test evidence. The checklist verifies everything CI and a reviewer will look for, so the PR is complete on the first submission.
+
+**Role spotlight:** core phase for **PM** — the anatomy of a reviewable PR. **QA** — test commands and output are a required part of the body. **DevOps** — the checklist mirrors what CI verifies on the PR. See [Role spotlights](#role-spotlights).
 
 **Do:** verify this checklist — do **not** open the PR unless the user asks:
 

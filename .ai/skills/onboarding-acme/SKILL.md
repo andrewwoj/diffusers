@@ -12,7 +12,7 @@ description: >
 
 **Mode: informational only.** Explain and orient — do not edit files, run tests, pick issues, open PRs, or make commits.
 
-If the user wants to contribute code, hand off to the [first-contribution](../first-contribution/SKILL.md) skill after this tour.
+If the user wants to contribute code, hand off to the [first-contribution](../first-contribution/SKILL.md) skill after this tour. That skill is not just for developers — it has role spotlights for QA, PM, and DevOps, so any role can walk a real change from environment setup to PR prep with their own lens highlighted.
 
 ---
 
@@ -87,6 +87,7 @@ Deliver 5–10 bullets for the selected role. Link to [self-serve.md](self-serve
 - **Roadmap tracking:** [Diffusers Roadmap](https://github.com/orgs/huggingface/projects/61/views/1) — GitHub Project board for planned features and priorities
 - **Core vs community:** Core library is inference-only; training examples live in `examples/`; community pipelines in `examples/community/`
 - **Feature requests:** [Feature request template](https://github.com/huggingface/diffusers/issues/new?template=feature_request.md)
+- **See a change ship end-to-end:** the [first-contribution](../first-contribution/SKILL.md) skill supports PMs with role spotlights — issue ranking/scoping (Phase 2), the Task Plan as a lightweight spec (Phase 3), and the anatomy of a reviewable PR (Phase 8)
 - **Self-serve next:** [self-serve.md — Product managers](self-serve.md#product-managers)
 
 ### QA engineer
@@ -98,6 +99,7 @@ Deliver 5–10 bullets for the selected role. Link to [self-serve.md](self-serve
 - **Slow tests:** gated on `@slow` / `RUN_SLOW=1` — downloads large models; runs nightly in CI
 - **Bug reports:** must include minimal repro + `diffusers-cli env` output (CONTRIBUTING §2.1)
 - **CI:** `.github/workflows/` — ruff, pytest, doc-builder, security scans
+- **See how tests gate a real change:** the [first-contribution](../first-contribution/SKILL.md) skill supports QA with role spotlights — issue reproducibility (Phase 2), the test contract in the Task Plan (Phase 3), and scoped tests as PR evidence (Phase 5)
 - **Self-serve next:** [self-serve.md — QA engineers](self-serve.md#qa-engineers)
 
 ### DevOps engineer
@@ -108,6 +110,7 @@ Deliver 5–10 bullets for the selected role. Link to [self-serve.md](self-serve
 - **Packaging:** `setup.py` + `pyproject.toml` (ruff config); editable install via `pip install -e ".[dev]"`
 - **Dependencies:** `src/diffusers/dependency_versions_table.py` — update with `make deps_table_update`
 - **Release:** Makefile targets `pre-release`, `post-release`, `pre-patch`, `post-patch`
+- **See the build environment in use:** the [first-contribution](../first-contribution/SKILL.md) skill supports DevOps with role spotlights — the CI image as dev container with bind-mounts and editable installs (Phase 1), and local/CI parity via `make quality` (Phase 6)
 - **Self-serve next:** [self-serve.md — DevOps engineers](self-serve.md#devops-engineers)
 
 ### Developer (contributor)
@@ -161,8 +164,8 @@ Emphasize: **most answers live in `.ai/`, CONTRIBUTING.md, or the docs** — you
 Tailor the closing message to role:
 
 - **Developer:** "When you're ready to contribute, run the **first-contribution** skill — it will find a good first issue and walk you through the fix."
-- **PM:** "Track features on the [Diffusers Roadmap](https://github.com/orgs/huggingface/projects/61/views/1)."
-- **QA:** "Run `pytest tests/schedulers/ -v` to verify your setup, then explore `pytest tests/<area>/ -v` for the model or component you're testing. When filing bugs, include `diffusers-cli env` + a minimal repro."
-- **DevOps:** "Use `make quality` locally to mirror CI lint checks."
+- **PM:** "Track features on the [Diffusers Roadmap](https://github.com/orgs/huggingface/projects/61/views/1). To see how an issue becomes a shipped change, run the **first-contribution** skill — it highlights the scoping, planning, and PR phases for PMs."
+- **QA:** "Run `pytest tests/schedulers/ -v` to verify your setup, then explore `pytest tests/<area>/ -v` for the model or component you're testing. When filing bugs, include `diffusers-cli env` + a minimal repro. To see how tests gate a real change, run the **first-contribution** skill — it highlights the test phases for QA."
+- **DevOps:** "Use `make quality` locally to mirror CI lint checks. To see the Docker/CI-parity setup in action, run the **first-contribution** skill — it highlights the environment and lint phases for DevOps."
 
 Ask if they want to dive deeper into any specific area before ending.
