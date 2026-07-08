@@ -49,6 +49,7 @@ Use this map to decide what to explain at each step. Full definitions: [conventi
 |-------|------------|------------------|------------------------------|
 | 1c | [branch-not-main](../onboarding-acme/conventions-overview.md#branch-not-main) | `git checkout -b fix-issue-…` | PRs must come from a feature branch — commits on `main` are not mergeable |
 | 1b | [scoped-tests](../onboarding-acme/conventions-overview.md#scoped-tests) (setup) | Docker + `pip install -e ".[dev,test]"` | Tests you run in Phase 5 must match CI's Python/deps — host envs vary |
+| 1d | Fork-friendly CI | PR checks on **andrewwoj/diffusers** | Upstream workflows need HF org runners and secrets — they fail on a fork; **Fork-friendly CI** is the check that matters |
 | 1 | [ai-convention-layer](../onboarding-acme/conventions-overview.md#ai-convention-layer) | `make cursor` on host | Wires `.ai/skills/` and `.ai/rules/` so agents (and you) can self-serve conventions without asking maintainers |
 | 2 | [one-problem-per-pr](../onboarding-acme/conventions-overview.md#one-problem-per-pr) | Issue ranking / selection | Good first issues are single-file or single-component — broad features stall in review |
 | 2 | [coordinate-first](../onboarding-acme/conventions-overview.md#coordinate-first) | Issue choice (reference only in demo) | On the real repo, maintainers confirm scope before you invest days of work |
@@ -83,14 +84,14 @@ The workflow is written for contributors, but QA engineers, product managers, an
 
 | Phase | QA engineer | Product manager | DevOps engineer |
 |-------|-------------|-----------------|-----------------|
-| 1 — Environment | Docker container is where all tests run — same env as CI, so results are reproducible | Setup cost is a one-time investment; everything after runs against a known-good baseline | **Core section:** why the CI image doubles as the dev environment, bind-mounts, editable installs, image variants in `docker/` |
+| 1 — Environment | Docker container is where all tests run — same env as CI, so results are reproducible | Setup cost is a one-time investment; everything after runs against a known-good baseline | **Core section:** why the CI image doubles as the dev environment, bind-mounts, editable installs, image variants in `docker/`, and **Fork-friendly CI** on the demo fork |
 | 2 — Issue discovery | What makes an issue *testable*: clear repro steps, expected vs actual behavior, single component | **Core section:** how issues are ranked and scoped — one-problem-per-pr is a scoping tool, not just a review rule | Issues touching CI, packaging, or Docker land in `.github/workflows/`, `setup.py`, `docker/` |
 | 3 — Analyze and plan | The Task Plan's "Tests to run / Tests to add" rows are the QA contract for the change | **Core section:** the Task Plan is a lightweight spec — hypothesis, scope, and acceptance criteria in one block | The Domain guide row shows how the repo routes work by area instead of tribal knowledge |
 | 4 — Implement | Watch for edits that change behavior without a test to catch regressions | Smallest-fix discipline keeps the change shippable and reviewable in one pass | Edits happen on the host; the bind-mount makes them live inside the container instantly |
 | 5 — Tests | **Core section:** scoped tests vs full suite, `@slow`/`RUN_SLOW` gating, saved output as PR evidence | Passing scoped tests are the "definition of done" evidence attached to the PR | Test commands here are the same ones CI runs — the container guarantees parity |
 | 6 — Format and lint | Lint failures block merge regardless of test results — this is a quality gate, not cosmetics | Automated style means review time goes to correctness, not formatting debates | **Core section:** `make quality` is the exact CI check run locally — a failed CI round-trip becomes a 30-second local fix |
 | 7 — Self-review | Same rubric as the `@claude` CI reviewer — an automated pre-merge quality pass | Shows how the project front-loads review so maintainer time is spent once | The review rubric is versioned in-repo (`.ai/review-rules.md`) — CI and local runs can't drift |
-| 8 — PR prep | Test evidence (commands + output) is a required part of the PR body | **Core section:** anatomy of a reviewable PR — one problem, linked issue, test proof | The checklist mirrors what CI will verify on the PR: lint, tests, branch hygiene |
+| 8 — PR prep | Test evidence (commands + output) is a required part of the PR body | **Core section:** anatomy of a reviewable PR — one problem, linked issue, test proof | The checklist mirrors what CI will verify on the PR: **Fork-friendly CI** on the demo fork, lint, tests, branch hygiene |
 
 ---
 
@@ -104,7 +105,7 @@ Before any commands or issue lists, deliver a welcome message covering the point
 
 | Phase | What happens | Why it exists |
 |-------|--------------|---------------|
-| 1 — Environment setup | Verify auth/remote, build a Docker dev container, create a feature branch | Tests must match CI's environment, and PRs must come from a named branch — fixing this later is painful |
+| 1 — Environment setup | Verify auth/remote, build a Docker dev container, create a feature branch, configure fork CI | Tests must match CI's environment, PRs must come from a named branch, and the demo fork needs a CI workflow that actually runs |
 | 2 — Issue discovery | List good-first-issues from huggingface/diffusers, rank them, user picks one | A first PR should be one well-scoped problem; picking well is half the work |
 | 3 — Analyze and plan | Investigate the issue in the local code and write a Task Plan | A shared plan catches wrong hypotheses before code is written, when changes are cheap |
 | 4 — Implement | Make the smallest fix, teaching conventions before each edit | Minimal diffs get reviewed and merged; sprawling ones stall |
@@ -230,6 +231,20 @@ git branch --show-current
 
 **Gate:** on a correctly named feature branch (not `main`).
 
+### 1d. Fork CI (demo fork only)
+
+**What and why:** the repo ships dozens of upstream workflows (`.github/workflows/pr_tests.yml`, GPU matrices, nightly jobs) that expect Hugging Face org runners and secrets. On **andrewwoj/diffusers** those jobs queue forever or fail, which makes PR checks look broken even when your code is fine. **Fork-friendly CI** (`.github/workflows/fork_friendly_ci.yml`) is the lightweight replacement: GitHub-hosted runners only, same `make quality` / consistency gates as upstream, plus a small CPU pytest smoke subset. It skips automatically on `huggingface/diffusers`.
+
+**Do:**
+
+1. Confirm the workflow file is on your fork's default branch (it ships with the repo).
+2. In **andrewwoj/diffusers** → **Settings → Actions → General**, disable upstream workflows you do not need so PR status stays readable. Keep **Fork-friendly CI**.
+3. After opening a PR, watch for **Fork-friendly CI** — three jobs: `check_code_quality`, `check_repository_consistency`, `run_smoke_tests`.
+
+**Local parity:** Phase 6 (`make quality`, `make fix-copies`) mirrors the first two jobs; Phase 5 scoped tests cover more than the smoke subset but follow the same idea.
+
+**Gate:** user knows which workflow to watch on the demo fork PR.
+
 ---
 
 ## Phase 2: Issue discovery
@@ -281,7 +296,7 @@ If any check fails, stop and complete the missing Phase 1 step. Common fixes:
 | `diffusers-dev` image missing | `docker build -t diffusers-dev docker/diffusers-pytorch-cpu` |
 | Branch still `fix-issue-TBD` | `git branch -m fix-issue-<NUMBER>-<short-kebab-description>` |
 
-**Gate:** Phase 1a, 1b, and 1c all pass → proceed to Phase 3.
+**Gate:** Phase 1a, 1b, 1c, and 1d all pass → proceed to Phase 3.
 
 ---
 
@@ -429,6 +444,7 @@ Fix all blocking findings. Note intentional skips for the PR description.
 - [ ] Branch is not main and follows fix-issue-<N>-<description> naming  → branch-not-main
 - [ ] origin points to andrewwoj/diffusers
 - [ ] make style && make quality pass  → make-style
+- [ ] **Fork-friendly CI** passed on the PR (demo fork — ignore failed upstream GPU/runner workflows)
 - [ ] pytest output saved for PR description  → scoped-tests
 - [ ] self-review skill run — blocking issues fixed  → self-review
 - [ ] PR description: reference issue link (huggingface), test commands + output, summary of change, conventions considered
@@ -465,5 +481,6 @@ gh pr create --repo andrewwoj/diffusers \
 | Pipeline / model / modular rules | [pipelines.md](../../pipelines.md), [models.md](../../models.md), [modular.md](../../modular.md) |
 | Self-serve lookup | [self-serve.md](../onboarding-acme/self-serve.md) |
 | Issue search commands | [issue-discovery.md](issue-discovery.md) |
+| Fork CI (demo fork PR checks) | `.github/workflows/fork_friendly_ci.yml` |
 | Pre-PR review | [self-review](../self-review/SKILL.md) |
 | Add a new model (not a good first issue) | [model-integration](../model-integration/SKILL.md) |
