@@ -1,4 +1,4 @@
-.PHONY: deps_table_update modified_only_fixup extra_style_checks quality style fixup fix-copies test test-examples codex claude clean-ai
+.PHONY: deps_table_update modified_only_fixup extra_style_checks quality style fixup fix-copies test test-examples codex claude cursor clean-ai
 
 # make sure to test the local checkout in scripts and not the pre-installed one (don't use quotes!)
 export PYTHONPATH = src
@@ -116,5 +116,10 @@ claude:
 	rm -rf .claude/skills
 	ln -snf ../.ai/skills .claude/skills
 
+cursor:
+	mkdir -p .cursor
+	rm -rf .cursor/skills
+	ln -snf ../.ai/skills .cursor/skills
+
 clean-ai:
-	rm -rf .agents/skills .claude/skills
+	rm -rf .agents/skills .claude/skills .cursor/skills

@@ -4,6 +4,7 @@
 
 - Local Claude Code agents: run `make claude` after cloning to wire the [skills](#skills) under `.claude/`.
 - Local OpenAI Codex agents: run `make codex` after cloning to wire the [skills](#skills) under `.agents/`.
+- Local Cursor agents: run `make cursor` after cloning to wire the [skills](#skills) under `.cursor/`.
 
 ## Coding style
 
@@ -35,8 +36,12 @@ Strive to write code as simple and explicit as possible.
 
 Task-specific guides live in `.ai/skills/` and are loaded on demand by AI agents. Available skills include:
 
+- [onboarding-acme](./skills/onboarding-acme/SKILL.md) (codebase tour, conventions, self-serve — informational)
+- [first-contribution](./skills/first-contribution/SKILL.md) (find a good first issue and contribute)
 - [model-integration](./skills/model-integration/SKILL.md) (adding/converting pipelines)
 - [self-review](./skills/self-review/SKILL.md) (pre-PR self-review against the project rules)
+
+Run **onboarding-acme** before **first-contribution** if you are unfamiliar with the repo.
 
 ## Self-review before a PR
 
