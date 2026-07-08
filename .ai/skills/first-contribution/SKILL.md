@@ -49,7 +49,7 @@ Use this map to decide what to explain at each step. Full definitions: [conventi
 |-------|------------|------------------|------------------------------|
 | 1c | [branch-not-main](../onboarding-acme/conventions-overview.md#branch-not-main) | `git checkout -b fix-issue-…` | PRs must come from a feature branch — commits on `main` are not mergeable |
 | 1b | [scoped-tests](../onboarding-acme/conventions-overview.md#scoped-tests) (setup) | Docker + `pip install -e ".[dev,test]"` | Tests you run in Phase 5 must match CI's Python/deps — host envs vary |
-| 1 | [ai-convention-layer](../onboarding-acme/conventions-overview.md#ai-convention-layer) | `make cursor` on host | Wires `.ai/skills/` so agents (and you) can self-serve rules without asking maintainers |
+| 1 | [ai-convention-layer](../onboarding-acme/conventions-overview.md#ai-convention-layer) | `make cursor` on host | Wires `.ai/skills/` and `.ai/rules/` so agents (and you) can self-serve conventions without asking maintainers |
 | 2 | [one-problem-per-pr](../onboarding-acme/conventions-overview.md#one-problem-per-pr) | Issue ranking / selection | Good first issues are single-file or single-component — broad features stall in review |
 | 2 | [coordinate-first](../onboarding-acme/conventions-overview.md#coordinate-first) | Issue choice (reference only in demo) | On the real repo, maintainers confirm scope before you invest days of work |
 | 3 | Domain guides | Task Plan → **Domain guide** row | Models, pipelines, and modular code each have different file layout and gotchas |
@@ -188,7 +188,7 @@ docker run --rm -v "$(pwd)":/workspace -w /workspace diffusers-dev \
 **Conventions here:**
 
 - **[scoped-tests](../onboarding-acme/conventions-overview.md#scoped-tests)** — *where:* inside this container in Phases 5–6. *why:* diffusers has heavy deps (PyTorch, transformers); Docker matches CI so "passes locally, fails in CI" is less likely.
-- **[ai-convention-layer](../onboarding-acme/conventions-overview.md#ai-convention-layer)** — *where:* `make cursor` on the **host**. *why:* links `.ai/skills/` into Cursor so convention docs stay one command away during the rest of the workflow.
+- **[ai-convention-layer](../onboarding-acme/conventions-overview.md#ai-convention-layer)** — *where:* `make cursor` on the **host**. *why:* links `.ai/skills/` and `.ai/rules/` into Cursor so convention docs stay one command away during the rest of the workflow.
 
 ### 1c. Feature branch
 

@@ -118,8 +118,9 @@ claude:
 
 cursor:
 	mkdir -p .cursor
-	rm -rf .cursor/skills
+	rm -rf .cursor/skills .cursor/rules
 	ln -snf ../.ai/skills .cursor/skills
+	ln -snf ../.ai/rules .cursor/rules
 
 clean-ai:
-	rm -rf .agents/skills .claude/skills .cursor/skills
+	rm -rf .agents/skills .claude/skills .cursor/skills .cursor/rules

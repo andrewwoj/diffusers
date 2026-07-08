@@ -1,0 +1,97 @@
+# Lightweight CI for fork demos. Uses GitHub-hosted runners only — no HF org
+# runners, secrets, or GPU hardware required.
+#
+# Skipped on huggingface/diffusers (upstream runs the full workflow matrix).
+name: Fork-friendly CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  DIFFUSERS_IS_CI: yes
+  OMP_NUM_THREADS: 4
+  MKL_NUM_THREADS: 4
+  PYTEST_TIMEOUT: 60
+
+jobs:
+  check_code_quality:
+    if: github.repository != 'huggingface/diffusers'
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install .[quality]
+      - name: Check quality
+        run: make quality
+      - name: Check if failure
+        if: ${{ failure() }}
+        run: |
+          echo "Quality check failed. Run \`pip install -e .[quality]\` then \`make style && make quality\` locally." >> $GITHUB_STEP_SUMMARY
+
+  check_repository_consistency:
+    if: github.repository != 'huggingface/diffusers'
+    needs: check_code_quality
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install .[quality]
+      - name: Check repo consistency
+        run: |
+          python utils/check_copies.py
+          python utils/check_dummies.py
+          python utils/check_support_list.py
+          python utils/check_forward_call_docstrings.py
+          make deps_table_check_updated
+      - name: Check if failure
+        if: ${{ failure() }}
+        run: |
+          echo "Repo consistency check failed. Run \`pip install -e .[quality]\` then \`make fix-copies\` locally." >> $GITHUB_STEP_SUMMARY
+
+  run_smoke_tests:
+    if: github.repository != 'huggingface/diffusers'
+    needs: [check_code_quality, check_repository_consistency]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install -e ".[test]"
+      - name: Run smoke tests
+        run: |
+          pytest -v \
+            tests/others/test_dependencies.py \
+            tests/schedulers/test_scheduler_ddim.py
+      - name: Check if failure
+        if: ${{ failure() }}
+        run: |
+          echo "Smoke tests failed. Reproduce locally with the same pytest command after \`pip install -e .[test]\` and CPU torch." >> $GITHUB_STEP_SUMMARY

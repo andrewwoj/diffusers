@@ -4,7 +4,7 @@
 
 - Local Claude Code agents: run `make claude` after cloning to wire the [skills](#skills) under `.claude/`.
 - Local OpenAI Codex agents: run `make codex` after cloning to wire the [skills](#skills) under `.agents/`.
-- Local Cursor agents: run `make cursor` after cloning to wire the [skills](#skills) under `.cursor/`.
+- Local Cursor agents: run `make cursor` after cloning to wire [skills](#skills) and [Cursor rules](#cursor-rules) under `.cursor/`.
 
 ## Coding style
 
@@ -42,6 +42,10 @@ Task-specific guides live in `.ai/skills/` and are loaded on demand by AI agents
 - [self-review](./skills/self-review/SKILL.md) (pre-PR self-review against the project rules)
 
 Run **onboarding-acme** before **first-contribution** if you are unfamiliar with the repo.
+
+## Cursor rules
+
+Cursor-specific rules live in `.ai/rules/` and are wired into `.cursor/rules/` by `make cursor`. Add or edit rules there — not under `.cursor/` directly (`.cursor/` is gitignored).
 
 ## Self-review before a PR
 

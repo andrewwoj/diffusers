@@ -1,0 +1,41 @@
+---
+description: Enforce the diffusers single-file policy for pipelines
+globs:
+  - "src/diffusers/pipelines/**"
+alwaysApply: false
+---
+
+# Single-file policy
+
+Pipelines in this library are deliberately self-contained. Readability
+beats DRY here: a reader should understand a pipeline top-to-bottom in
+one file. Full context: `.ai/pipelines.md` gotchas #4–5.
+
+- Do NOT import functions or classes from another model's pipeline
+  implementation module (e.g. `pipeline_flux.py`, `pipeline_stable_diffusion.py`).
+  Allowed imports: `pipeline_utils` (base class), same-model `pipeline_output.py`,
+  and occasionally shared output dataclasses re-exported from a sub-package
+  `__init__.py`.
+- Do NOT subclass an existing pipeline class for a variant (img2img, inpaint,
+  etc.). Each variant is its own file and class, even when `__call__` is
+  nearly identical — duplicate and link with `# Copied from` instead.
+- Before copying logic from another pipeline, check whether it already lives
+  in a common module (`src/diffusers/utils/`, schedulers, guiders, models).
+  Never create new cross-pipeline imports to avoid duplication.
+- If you need logic that exists in another pipeline, DUPLICATE it into this
+  file and mark it with a `# Copied from` comment pointing at the source.
+  Works for module-level functions and class methods, e.g.:
+  `# Copied from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion.retrieve_timesteps`
+  `# Copied from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion.StableDiffusionPipeline._encode_prompt`
+- `# Copied from` workflow:
+  - **Adding a new copy:** paste the duplicate, add the header, run `make fix-copies`.
+  - **Changing existing linked code:** edit the **source**, not the copy; run
+    `make fix-copies` to propagate. Do not edit copied blocks directly.
+  Include `make fix-copies` output in the change.
+
+This rule applies to core library pipelines under `src/diffusers/pipelines/`.
+`examples/community/` pipelines are looser but still prefer `# Copied from`
+over hidden coupling to core pipeline modules.
+
+If a request would require violating this policy, say so and propose the
+compliant alternative instead of silently complying.

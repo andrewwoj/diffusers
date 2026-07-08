@@ -18,7 +18,7 @@ Full domain guides: [models.md](../../models.md), [pipelines.md](../../pipelines
 
 ## ai-convention-layer
 
-**What:** Project conventions live in `.ai/` — `AGENTS.md`, domain guides (`models.md`, `pipelines.md`, `modular.md`), and task skills under `.ai/skills/`. Wire skills locally with `make cursor`, `make claude`, or `make codex`.
+**What:** Project conventions live in `.ai/` — `AGENTS.md`, domain guides (`models.md`, `pipelines.md`, `modular.md`), task skills under `.ai/skills/`, and Cursor rules under `.ai/rules/`. Wire skills and Cursor rules locally with `make cursor`; wire skills for Claude Code or Codex with `make claude` or `make codex`.
 
 **Why:** Conventions are written for both humans and AI agents. You can self-serve coding rules without asking maintainers — load the relevant guide or skill for your task.
 

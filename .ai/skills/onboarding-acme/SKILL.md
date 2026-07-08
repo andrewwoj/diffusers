@@ -72,7 +72,7 @@ Maintainers document rules in `.ai/` so contributors and agents can find answers
 | [review-rules.md](../../review-rules.md) | What PR reviewers check |
 | `.ai/skills/` | Task-specific workflows loaded on demand |
 
-Wire skills locally: `make cursor` (Cursor), `make claude` (Claude Code), `make codex` (Codex).
+Wire agent config locally: `make cursor` (Cursor — skills + rules), `make claude` (Claude Code), `make codex` (Codex).
 
 ---
 

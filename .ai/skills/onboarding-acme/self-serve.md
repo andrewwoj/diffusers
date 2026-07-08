@@ -15,7 +15,7 @@ Lookup table: **I want to…** → where to go without asking a maintainer.
 | Ask a general question | [Discussion forum](https://discuss.huggingface.co/c/discussion-related-to-httpsgithubcomhuggingfacediffusers/) or [Discord](https://discord.gg/G7tWnz98XR) |
 | Report a library bug | [Bug report template](https://github.com/huggingface/diffusers/issues/new?template=bug-report.yml) — include `diffusers-cli env` output |
 | Learn contribution etiquette | [CONTRIBUTING.md](../../../CONTRIBUTING.md) |
-| Wire AI agent skills | `make cursor` / `make claude` / `make codex` — see [AGENTS.md](../../AGENTS.md) |
+| Wire AI agent config | `make cursor` / `make claude` / `make codex` — see [AGENTS.md](../../AGENTS.md) (`make cursor` wires skills and Cursor rules) |
 
 ---
 
