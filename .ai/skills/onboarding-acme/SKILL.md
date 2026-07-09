@@ -37,7 +37,7 @@ Present this overview for every role (adjust depth to the audience):
 
 ### What diffusers is
 
-Hugging Face's library for **pretrained diffusion models** — text-to-image, image-to-video, audio, and more. Three interchangeable core components:
+ACME's shared library for **pretrained diffusion models** — text-to-image, image-to-video, audio, and more. Three interchangeable core components:
 
 | Component | Location | Role |
 |-----------|----------|------|
@@ -63,7 +63,7 @@ diffusers/
 
 Maintainers document rules in `.ai/` so contributors and agents can find answers without tribal knowledge:
 
-| File | Purpose |
+| Path | Purpose |
 |------|---------|
 | [AGENTS.md](../../AGENTS.md) | Coding philosophy, formatting, skills index |
 | [models.md](../../models.md) | Model implementation rules |
@@ -82,7 +82,7 @@ Deliver 5–10 bullets for the selected role. Link to [self-serve.md](self-serve
 
 ### Product manager
 
-- **User-facing surface:** `DiffusionPipeline.from_pretrained(...)` — 30,000+ Hub checkpoints
+- **User-facing surface:** `DiffusionPipeline.from_pretrained(...)` — load pretrained checkpoints for inference
 - **Model landscape:** ~90 pipeline families in `src/diffusers/pipelines/` (Flux, SD3, Wan, Hunyuan Video, etc.)
 - **Roadmap tracking:** [Diffusers Roadmap](https://github.com/orgs/huggingface/projects/61/views/1) — GitHub Project board for planned features and priorities
 - **Core vs community:** Core library is inference-only; training examples live in `examples/`; community pipelines in `examples/community/`
@@ -139,7 +139,13 @@ Explain the top principles with **why** — full catalog in [conventions-overvie
 | [Make style](conventions-overview.md#make-style) — automated formatting | Reviewers focus on correctness, not style |
 | [Scoped tests](conventions-overview.md#scoped-tests) — `pytest tests/<area>/` | Fast local feedback loop |
 
-For area-specific gotchas (attention pattern, `@torch.no_grad()`, lazy imports), read the domain guide — don't memorize lists upfront.
+As you work through issues, reference area-specific conventions when you need them — don't memorize them upfront:
+
+| Area | Guide |
+|------|-------|
+| Models | [models.md](../../models.md) |
+| Pipelines | [pipelines.md](../../pipelines.md) |
+| Modular pipelines | [modular.md](../../modular.md) |
 
 ---
 
