@@ -7,12 +7,13 @@
 - **Roadmap tracking:** [Diffusers Roadmap](https://github.com/orgs/huggingface/projects/61/views/1) — GitHub Project board for planned features and priorities
 - **Core vs community:** Core library is inference-only; training examples live in `examples/`; community pipelines in `examples/community/`
 - **Feature requests:** [Feature request template](https://github.com/huggingface/diffusers/issues/new?template=feature_request.md)
-- **See a change ship end-to-end:** the [first-contribution](../../first-contribution/SKILL.md) skill supports PMs with role spotlights — issue ranking/scoping (Phase 2), the Task Plan as a lightweight spec (Phase 3), and the anatomy of a reviewable PR (Phase 8)
+- **See a change ship end-to-end:** run the [first-contribution](../../first-contribution/SKILL.md) skill — same full contribution process as every other role, with PM spotlights on issue ranking/scoping (Phase 2), the Task Plan as a lightweight spec (Phase 3), and the anatomy of a reviewable PR (Phase 8)
 
 ## Self-serve
 
 | I want to… | Go to… |
 |------------|--------|
+| Walk a real change end-to-end (full process) | [first-contribution skill](../../first-contribution/SKILL.md) — PM role spotlights included |
 | See supported model families | `src/diffusers/pipelines/` (~90 directories), [API pipeline docs](https://huggingface.co/docs/diffusers/api/pipelines/overview) |
 | Understand inference vs training scope | Core library = inference; training lives in `examples/` |
 | Track the roadmap | [Diffusers Roadmap](https://github.com/orgs/huggingface/projects/61/views/1) |
@@ -23,4 +24,6 @@
 
 ## Closing
 
-Track features on the [Diffusers Roadmap](https://github.com/orgs/huggingface/projects/61/views/1). To see how an issue becomes a shipped change, run the **first-contribution** skill — it highlights the scoping, planning, and PR phases for PMs.
+Track features on the [Diffusers Roadmap](https://github.com/orgs/huggingface/projects/61/views/1).
+
+When you're ready for the next step, run the **first-contribution** skill — it walks the full contribution process (environment through PR prep) with PM spotlights on issue ranking/scoping, the Task Plan as a lightweight spec, and the anatomy of a reviewable PR. Every role takes this path so you understand how a change ships, not only how to track it.

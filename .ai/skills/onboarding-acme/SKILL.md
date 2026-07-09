@@ -5,6 +5,8 @@ description: >
   Use when someone is new to the project, asks how the repo is organized,
   wants to understand conventions, or is a PM, QA engineer, or DevOps engineer
   exploring the codebase. Informational only — does not make code changes.
+  After the tour, guide every role (including QA and DevOps) to the
+  first-contribution skill so they learn the full contribution process.
   Named onboarding-acme to avoid clashing with Cursor's built-in onboarding skill.
 ---
 
@@ -12,7 +14,7 @@ description: >
 
 **Mode: informational only.** Explain and orient — do not edit files, run tests, pick issues, open PRs, or make commits.
 
-If the user wants to contribute code, hand off to the [first-contribution](../first-contribution/SKILL.md) skill after this tour. That skill is not just for developers — it has role spotlights for QA, PM, and DevOps, so any role can walk a real change from environment setup to PR prep with their own lens highlighted.
+After this tour, guide **every role** — Developer, QA, PM, and DevOps — toward the [first-contribution](../first-contribution/SKILL.md) skill. That walkthrough is how they learn the full contribution process (environment → issue → plan → implement → test → PR), not only how to write code. It has role spotlights for QA, PM, and DevOps so each participant sees the same end-to-end path with their lens highlighted.
 
 ---
 
@@ -116,7 +118,9 @@ Emphasize: **most answers live in `.ai/`, CONTRIBUTING.md, or the docs** — you
 
 ## Step 6 — Close
 
-Deliver the **Closing** section from the role file. Ask if they want to dive deeper into any specific area before ending.
+Deliver the **Closing** section from the role file.
+
+Then explicitly invite them to run **first-contribution** next so they see the full process end-to-end — not only the role-specific highlights. Frame it as the natural next step for every role (including QA and DevOps), not an optional deep-dive for developers only. Ask if they want to start that skill now, or dive deeper into any onboarding area first.
 
 ---
 

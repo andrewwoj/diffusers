@@ -31,4 +31,4 @@
 
 ## Closing
 
-When you're ready to contribute, run the **first-contribution** skill — it will find a good first issue and walk you through the fix.
+When you're ready to contribute, run the **first-contribution** skill — it finds a good first issue and walks the full contribution process (environment through PR prep). Every role takes this path so the whole team shares the same end-to-end picture.

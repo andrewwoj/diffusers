@@ -12,4 +12,4 @@
 
 ## Closing
 
-…
+… (end by inviting them to run first-contribution for the full contribution process — every role takes this path)
