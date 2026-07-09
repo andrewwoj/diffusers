@@ -47,9 +47,9 @@ Use this map to decide what to explain at each step. Full definitions: [conventi
 
 | Phase | Convention | Where it applies | Why it matters on a first PR |
 |-------|------------|------------------|------------------------------|
-| 1c | [branch-not-main](../onboarding-acme/conventions-overview.md#branch-not-main) | `git checkout -b fix-issue-…` | PRs must come from a feature branch — commits on `main` are not mergeable |
 | 1b | [scoped-tests](../onboarding-acme/conventions-overview.md#scoped-tests) (setup) | Docker + `pip install -e ".[dev,test]"` | Tests you run in Phase 5 must match CI's Python/deps — host envs vary |
-| 1d | Fork-friendly CI | PR checks on **andrewwoj/diffusers** | Upstream workflows need HF org runners and secrets — they fail on a fork; **Fork-friendly CI** is the check that matters |
+| 1c | Fork-friendly CI | PR checks on **andrewwoj/diffusers** | Upstream workflows need HF org runners and secrets — they fail on a fork; **Fork-friendly CI** is the check that matters |
+| 2 | [branch-not-main](../onboarding-acme/conventions-overview.md#branch-not-main) | `git checkout -b fix-issue-<N>-…` after issue selection | PRs must come from a feature branch — commits on `main` are not mergeable |
 | 1 | [ai-convention-layer](../onboarding-acme/conventions-overview.md#ai-convention-layer) | `make cursor` on host | Wires `.ai/skills/` and `.ai/rules/` so agents (and you) can self-serve conventions without asking maintainers |
 | 2 | [one-problem-per-pr](../onboarding-acme/conventions-overview.md#one-problem-per-pr) | Issue ranking / selection | Good first issues are single-file or single-component — broad features stall in review |
 | 2 | [coordinate-first](../onboarding-acme/conventions-overview.md#coordinate-first) | Issue choice (reference only in demo) | On the real repo, maintainers confirm scope before you invest days of work |
@@ -105,8 +105,8 @@ Before any commands or issue lists, deliver a welcome message covering the point
 
 | Phase | What happens | Why it exists |
 |-------|--------------|---------------|
-| 1 — Environment setup | Verify auth/remote, build a Docker dev container, create a feature branch, configure fork CI | Tests must match CI's environment, PRs must come from a named branch, and the demo fork needs a CI workflow that actually runs |
-| 2 — Issue discovery | List good-first-issues from huggingface/diffusers, rank them, user picks one | A first PR should be one well-scoped problem; picking well is half the work |
+| 1 — Environment setup | Verify auth/remote, build a Docker dev container, configure fork CI | Tests must match CI's environment, and the demo fork needs a CI workflow that actually runs |
+| 2 — Issue discovery | List good-first-issues from huggingface/diffusers, rank them, user picks one, create feature branch | A first PR should be one well-scoped problem; the branch name includes the issue number |
 | 3 — Analyze and plan | Investigate the issue in the local code and write a Task Plan | A shared plan catches wrong hypotheses before code is written, when changes are cheap |
 | 4 — Implement | Make the smallest fix, teaching conventions before each edit | Minimal diffs get reviewed and merged; sprawling ones stall |
 | 5 — Tests | Run scoped tests in the container, add tests if behavior changed | Tests are the proof a reviewer needs that the fix works and stays fixed |
@@ -124,11 +124,11 @@ Before any commands or issue lists, deliver a welcome message covering the point
 
 ## Phase 1: Environment setup
 
-**Why this phase exists:** everything later depends on a trustworthy environment. Tests (Phase 5) only mean something if they run against the same Python and dependency versions as CI; the PR (Phase 8) is only safe if `origin` points at the demo fork and the work sits on a feature branch. Doing these checks first turns end-of-workflow surprises into two-minute fixes now.
+**Why this phase exists:** everything later depends on a trustworthy environment. Tests (Phase 5) only mean something if they run against the same Python and dependency versions as CI; the PR (Phase 8) is only safe if `origin` points at the demo fork. Doing these checks first turns end-of-workflow surprises into two-minute fixes now. Staying on `main` during Phase 1 is fine — do not commit yet; the feature branch is created in Phase 2 after you pick an issue.
 
 **Role spotlight:** core phase for **DevOps** — the CI image doubling as the dev environment, bind-mounts, editable installs, and the image variants in `docker/` are all here. See [Role spotlights](#role-spotlights).
 
-Complete all three steps before **Phase 3**. Phase 2 (issue discovery) can run in parallel with Phase 1b/1c, but do not analyze, plan, or write code until the Phase 2 exit gate passes (see below).
+Complete all steps below before **Phase 3**. Phase 2 (issue discovery) follows Phase 1; you can browse issues while Docker builds, but do not analyze, plan, or write code until the Phase 2 exit gate passes (see below).
 
 ### 1a. Repo and auth
 
@@ -145,16 +145,8 @@ Complete all three steps before **Phase 3**. Phase 2 (issue discovery) can run i
    ```bash
    git remote set-url origin git@github.com:andrewwoj/diffusers.git
    ```
-3. Confirm not on `main`:
-   ```bash
-   git branch --show-current
-   ```
 
 **Gate:** `gh` is authenticated and `origin` is `andrewwoj/diffusers`.
-
-**Conventions here:**
-
-- **[branch-not-main](../onboarding-acme/conventions-overview.md#branch-not-main)** — *where:* before your first commit. *why:* all changes reach maintainers through PRs from a named branch; working on `main` mixes local experiments with the shared baseline.
 
 ### 1b. Docker container
 
@@ -191,47 +183,7 @@ docker run --rm -v "$(pwd)":/workspace -w /workspace diffusers-dev \
 - **[scoped-tests](../onboarding-acme/conventions-overview.md#scoped-tests)** — *where:* inside this container in Phases 5–6. *why:* diffusers has heavy deps (PyTorch, transformers); Docker matches CI so "passes locally, fails in CI" is less likely.
 - **[ai-convention-layer](../onboarding-acme/conventions-overview.md#ai-convention-layer)** — *where:* `make cursor` on the **host**. *why:* links `.ai/skills/` and `.ai/rules/` into Cursor so convention docs stay one command away during the rest of the workflow.
 
-### 1c. Feature branch
-
-**What and why:** create a feature branch before picking an issue, so `main` stays a clean mirror of upstream from the very first edit. PRs are diffed against `main` — commits made on `main` itself are not mergeable and are painful to untangle later. The naming pattern ties the branch (and eventually the PR) to one specific issue, which is how reviewers and CI trace what a change is for.
-
-**Do:** create a branch **before** selecting an issue. Use this naming pattern:
-
-```
-fix-issue-<NUMBER>-<short-kebab-description>
-```
-
-Examples: `fix-issue-1234-wrong-dtype`, `fix-issue-567-missing-docstring`
-
-**Rules:**
-
-| Rule | Good | Bad |
-|------|------|-----|
-| Lowercase kebab-case | `fix-issue-42-scheduler-step` | `Fix_Issue_42` |
-| Starts with `fix-issue-` | `fix-issue-99-typo` | `my-branch`, `issue-99` |
-| Includes issue number once chosen | `fix-issue-1234-...` | `fix-scheduler` (no number) |
-| No spaces or underscores | `fix-issue-1-null-check` | `fix issue 1` |
-| Not `main` | any feature branch | `main` |
-
-If the issue is not selected yet, create a temporary branch and rename after Phase 2:
-
-```bash
-git checkout -b fix-issue-TBD
-# after issue selection:
-git branch -m fix-issue-<NUMBER>-<short-kebab-description>
-```
-
-Verify:
-
-```bash
-git branch --show-current
-```
-
-**Convention:** [branch-not-main](../onboarding-acme/conventions-overview.md#branch-not-main) — *where:* branch name `fix-issue-<N>-<description>`. *why:* reviewers and CI tie a PR to one issue; predictable names make your demo PR easy to follow.
-
-**Gate:** on a correctly named feature branch (not `main`).
-
-### 1d. Fork CI (demo fork only)
+### 1c. Fork CI (demo fork only)
 
 **What and why:** the repo ships dozens of upstream workflows (`.github/workflows/pr_tests.yml`, GPU matrices, nightly jobs) that expect Hugging Face org runners and secrets. On **andrewwoj/diffusers** those jobs queue forever or fail, which makes PR checks look broken even when your code is fine. **Fork-friendly CI** (`.github/workflows/fork_friendly_ci.yml`) is the lightweight replacement: GitHub-hosted runners only, same `make quality` / consistency gates as upstream, plus a small CPU pytest smoke subset. It skips automatically on `huggingface/diffusers`.
 
@@ -261,7 +213,7 @@ gh issue list --repo huggingface/diffusers \
   --json number,title,body,labels,assignees,url
 ```
 
-Rank and present top 3–5 via `AskUserQuestion`. After selection, rename the branch if needed (see Phase 1c).
+Rank and present top 3–5 via `AskUserQuestion`.
 
 **Conventions here:**
 
@@ -269,6 +221,39 @@ Rank and present top 3–5 via `AskUserQuestion`. After selection, rename the br
 - **[coordinate-first](../onboarding-acme/conventions-overview.md#coordinate-first)** — *where:* real contributions on huggingface/diffusers (demo skips this). *why:* maintainers may already be working on the issue or want a different approach — worth knowing before you treat an issue as "yours."
 
 **Gate:** user selects an issue (or pastes one manually).
+
+### 2b. Feature branch
+
+**What and why:** create the feature branch **after** selecting an issue, so the name includes the issue number from the start. PRs are diffed against `main` — commits on `main` itself are not mergeable and are painful to untangle later. The naming pattern ties the branch (and eventually the PR) to one specific issue, which is how reviewers and CI trace what a change is for.
+
+**Do:** from `main`, create a branch using the selected issue number:
+
+```bash
+git checkout main
+git checkout -b fix-issue-<NUMBER>-<short-kebab-description>
+```
+
+Examples: `fix-issue-1234-wrong-dtype`, `fix-issue-567-missing-docstring`
+
+**Rules:**
+
+| Rule | Good | Bad |
+|------|------|-----|
+| Lowercase kebab-case | `fix-issue-42-scheduler-step` | `Fix_Issue_42` |
+| Starts with `fix-issue-` | `fix-issue-99-typo` | `my-branch`, `issue-99` |
+| Includes issue number | `fix-issue-1234-...` | `fix-scheduler` (no number) |
+| No spaces or underscores | `fix-issue-1-null-check` | `fix issue 1` |
+| Not `main` | any feature branch | `main` |
+
+Verify:
+
+```bash
+git branch --show-current
+```
+
+**Convention:** [branch-not-main](../onboarding-acme/conventions-overview.md#branch-not-main) — *where:* branch name `fix-issue-<N>-<description>`. *why:* reviewers and CI tie a PR to one issue; predictable names make your demo PR easy to follow.
+
+**Gate:** on `fix-issue-<N>-<short-kebab-description>` (not `main`).
 
 ### Phase 2 exit gate — environment ready (required before Phase 3)
 
@@ -284,19 +269,19 @@ docker info
 docker run --rm -v "$(pwd)":/workspace -w /workspace diffusers-dev \
   bash -c 'pip install -e ".[dev,test]" && pytest --version'
 
-# 1c — feature branch (rename after issue selection if still fix-issue-TBD)
-git branch --show-current   # not main; ideally fix-issue-<N>-<short-kebab-description>
+# 2b — feature branch (after issue selection)
+git branch --show-current   # fix-issue-<N>-<short-kebab-description>, not main
 ```
 
-If any check fails, stop and complete the missing Phase 1 step. Common fixes:
+If any check fails, stop and complete the missing step. Common fixes:
 
 | Failure | Fix |
 |---------|-----|
 | `Cannot connect to the Docker daemon` | `colima start` or start Docker Desktop / OrbStack |
 | `diffusers-dev` image missing | `docker build -t diffusers-dev docker/diffusers-pytorch-cpu` |
-| Branch still `fix-issue-TBD` | `git branch -m fix-issue-<NUMBER>-<short-kebab-description>` |
+| Still on `main` | `git checkout -b fix-issue-<NUMBER>-<short-kebab-description>` |
 
-**Gate:** Phase 1a, 1b, 1c, and 1d all pass → proceed to Phase 3.
+**Gate:** Phase 1 (1a, 1b, 1c) complete, issue selected, and feature branch created → proceed to Phase 3.
 
 ---
 
@@ -306,7 +291,7 @@ If any check fails, stop and complete the missing Phase 1 step. Common fixes:
 
 **Role spotlight:** core phase for **PM** (the Task Plan is a lightweight spec: hypothesis, scope, acceptance criteria) and for **QA** (the "Tests to run / Tests to add" rows are the QA contract for the change). See [Role spotlights](#role-spotlights).
 
-**Prerequisite:** Phase 2 exit gate (Phase 1 complete) must pass. If Docker or the feature branch is not ready, finish Phase 1 before producing the Task Plan.
+**Prerequisite:** Phase 2 exit gate must pass (Phase 1 complete, issue selected, feature branch created). If Docker or the feature branch is not ready, finish Phases 1–2 before producing the Task Plan.
 
 **Do:**
 

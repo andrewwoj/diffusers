@@ -57,8 +57,8 @@ Then in the local repo:
 - Grep for files/classes mentioned in the issue
 - Read the affected code and nearest reference implementation
 - Identify the domain guide: [models.md](../../models.md), [pipelines.md](../../pipelines.md), or [modular.md](../../modular.md)
-- Rename the feature branch to `fix-issue-<NUMBER>-<short-kebab-description>` (see [SKILL.md](SKILL.md) Phase 1c)
-- **Do not proceed to Phase 3** until the [Phase 2 exit gate](SKILL.md#phase-2-exit-gate--environment-ready-required-before-phase-3) confirms Docker and the feature branch are ready
+- Create the feature branch: `git checkout -b fix-issue-<NUMBER>-<short-kebab-description>` (see [SKILL.md](SKILL.md) Phase 2b)
+- **Do not proceed to Phase 3** until the [Phase 2 exit gate](SKILL.md#phase-2-exit-gate--environment-ready-required-before-phase-3) confirms Phase 1 is complete and the feature branch exists
 
 ---
 
