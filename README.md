@@ -191,6 +191,7 @@ onboarding-acme → first-contribution → model-integration / self-review
 
 ### Role quick links
 
-- **PM** — roadmap tracking, issue scoping, feature-to-code mapping → [self-serve.md — Product managers](.ai/skills/onboarding-acme/self-serve.md#product-managers)
-- **QA** — test layout, `diffusers-cli env`, bug repro standards → [self-serve.md — QA engineers](.ai/skills/onboarding-acme/self-serve.md#qa-engineers)
-- **DevOps** — `docker/`, CI workflows, `make quality` parity → [self-serve.md — DevOps engineers](.ai/skills/onboarding-acme/self-serve.md#devops-engineers)
+- **PM** — roadmap tracking, issue scoping, feature-to-code mapping → [roles/product-manager.md](.ai/skills/onboarding-acme/roles/product-manager.md)
+- **QA** — test layout, `diffusers-cli env`, bug repro standards → [roles/qa-engineer.md](.ai/skills/onboarding-acme/roles/qa-engineer.md)
+- **DevOps** — `docker/`, CI workflows, `make quality` parity → [roles/devops-engineer.md](.ai/skills/onboarding-acme/roles/devops-engineer.md)
+- **Developer** — architecture, conventions, path to first PR → [roles/developer.md](.ai/skills/onboarding-acme/roles/developer.md)
