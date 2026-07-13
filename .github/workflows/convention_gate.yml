@@ -1,11 +1,13 @@
-# Convention gate for fork demos. Uses the Cursor CLI to review the PR diff
-# against rules in .cursor/rules (wired from .ai/rules via `make cursor`).
+# Convention gate for fork demos. Uses the Cursor CLI to review the push/PR
+# diff against rules in .cursor/rules (wired from .ai/rules via `make cursor`).
 #
 # Skipped on huggingface/diffusers (upstream runs the full workflow matrix).
 name: convention-gate
 
 on:
   pull_request:
+    branches: [main]
+  push:
     branches: [main]
 
 permissions:
@@ -36,8 +38,12 @@ jobs:
         env:
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
         run: |
-          git fetch origin "${{ github.base_ref }}"
-          git diff "origin/${{ github.base_ref }}...HEAD" > pr.diff
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin "${{ github.base_ref }}"
+            git diff "origin/${{ github.base_ref }}...HEAD" > pr.diff
+          else
+            git diff "${{ github.event.before }}...${{ github.sha }}" > pr.diff
+          fi
           agent -p "Read the convention rules in .cursor/rules/. Review the
           following diff against those rules only. List each violation with
           the rule it breaks, the location, and a suggested fix. If clean,
