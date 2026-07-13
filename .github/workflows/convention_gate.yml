@@ -44,7 +44,7 @@ jobs:
           else
             git diff "${{ github.event.before }}...${{ github.sha }}" > pr.diff
           fi
-          agent -p "Read the convention rules in .cursor/rules/. Review the
+          agent -p --trust "Read the convention rules in .cursor/rules/. Review the
           following diff against those rules only. List each violation with
           the rule it breaks, the location, and a suggested fix. If clean,
           say CLEAN.
