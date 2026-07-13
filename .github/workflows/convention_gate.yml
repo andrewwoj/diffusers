@@ -1,0 +1,50 @@
+# Convention gate for fork demos. Uses the Cursor CLI to review the PR diff
+# against rules in .cursor/rules (wired from .ai/rules via `make cursor`).
+#
+# Skipped on huggingface/diffusers (upstream runs the full workflow matrix).
+name: convention-gate
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    if: github.repository != 'huggingface/diffusers'
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Wire Cursor rules
+        run: make cursor
+
+      - name: Install Cursor CLI
+        run: |
+          curl https://cursor.com/install -fsS | bash
+          echo "$HOME/.cursor/bin" >> "$GITHUB_PATH"
+
+      - name: Review diff against conventions
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+        run: |
+          git fetch origin "${{ github.base_ref }}"
+          git diff "origin/${{ github.base_ref }}...HEAD" > pr.diff
+          agent -p "Read the convention rules in .cursor/rules/. Review the
+          following diff against those rules only. List each violation with
+          the rule it breaks, the location, and a suggested fix. If clean,
+          say CLEAN.
+
+          $(cat pr.diff)"
+      - name: Check if failure
+        if: ${{ failure() }}
+        run: |
+          echo "Convention gate failed. Review the agent output above against \`.cursor/rules/\` (from \`.ai/rules/\`)." >> "$GITHUB_STEP_SUMMARY"
