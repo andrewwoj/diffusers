@@ -38,6 +38,7 @@ Task-specific guides live in `.ai/skills/` and are loaded on demand by AI agents
 
 - [onboarding-acme](./skills/onboarding-acme/SKILL.md) (codebase tour, conventions, self-serve — informational)
 - [first-contribution](./skills/first-contribution/SKILL.md) (find a good first issue and contribute)
+- [feature-request-review](./skills/feature-request-review/SKILL.md) (demo: triage a Diffusers Roadmap feature request)
 - [model-integration](./skills/model-integration/SKILL.md) (adding/converting pipelines)
 - [self-review](./skills/self-review/SKILL.md) (pre-PR self-review against the project rules)
 
