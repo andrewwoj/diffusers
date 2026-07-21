@@ -1301,16 +1301,16 @@ class FrescoV2VPipeline(StableDiffusionControlNetImg2ImgPipeline):
         requires_safety_checker: bool = True,
     ):
         super().__init__(
-            vae,
-            text_encoder,
-            tokenizer,
-            unet,
-            controlnet,
-            scheduler,
-            safety_checker,
-            feature_extractor,
-            image_encoder,
-            requires_safety_checker,
+            vae=vae,
+            text_encoder=text_encoder,
+            tokenizer=tokenizer,
+            unet=unet,
+            controlnet=controlnet,
+            scheduler=scheduler,
+            safety_checker=safety_checker,
+            feature_extractor=feature_extractor,
+            image_encoder=image_encoder,
+            requires_safety_checker=requires_safety_checker,
         )
 
         if safety_checker is None and requires_safety_checker:
